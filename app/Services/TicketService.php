@@ -9,7 +9,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class TicketService
 {
@@ -17,10 +17,23 @@ class TicketService
     {
         $tickets = [];
 
+        // Pastikan folder QR ada
+        $qrDir = storage_path('app/public/qrcodes');
+        if (!File::exists($qrDir)) {
+            File::makeDirectory($qrDir, 0755, true);
+        }
+
+        // Pastikan folder PDF ada
+        $ticketDir = storage_path('app/public/tickets');
+        if (!File::exists($ticketDir)) {
+            File::makeDirectory($ticketDir, 0755, true);
+        }
+
         for ($i = 0; $i < $order->quantity; $i++) {
             $ticketCode = strtoupper(Str::random(10));
 
             $qrPath = 'qrcodes/' . $ticketCode . '.svg';
+
             QrCode::size(200)->generate(
                 $ticketCode,
                 storage_path('app/public/' . $qrPath)
@@ -36,11 +49,19 @@ class TicketService
             $tickets[] = $ticket;
         }
 
-        // PDF & Email -- skip dulu, akan diaktifkan setelah webhook jalan
+        // Generate PDF tiket
         $pdf = Pdf::loadView('pdf.ticket', compact('order', 'tickets'));
-        $pdfPath = storage_path('app/public/tickets/tiket-' . $order->id . '.pdf');
+
+        $pdfPath = storage_path(
+            'app/public/tickets/tiket-' . $order->id . '.pdf'
+        );
+
         $pdf->save($pdfPath);
-        Mail::to($order->email)->send(new TicketMail($order, $tickets, $pdfPath));
+
+        // Kirim email
+        Mail::to($order->email)->send(
+            new TicketMail($order, $tickets, $pdfPath)
+        );
 
         return $tickets;
     }
