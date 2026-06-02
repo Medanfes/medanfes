@@ -208,10 +208,10 @@
 @endsection
 
 @section('scripts')
-{{-- ✅ BENAR --}}
 <script src="https://app.sandbox.midtrans.com/snap/snap.js"
     data-client-key="{{ config('services.midtrans.client_key') }}"></script>
-    
+
+<script>
     document.getElementById('ticket-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
