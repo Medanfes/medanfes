@@ -44,7 +44,7 @@ class OrderController extends Controller
 
             $params = [
                 'transaction_details' => [
-                    'order_id'     => 'MEDANFES-' . $order->id,
+                    'order_id' => 'MEDANFES-' . $order->id . '-' . time(),
                     'gross_amount' => $total,
                 ],
                 'customer_details' => [
