@@ -208,9 +208,10 @@
 @endsection
 
 @section('scripts')
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" 
-    data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
-<script>
+{{-- ✅ BENAR --}}
+<script src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+    
     document.getElementById('ticket-form').addEventListener('submit', function(e) {
         e.preventDefault();
 

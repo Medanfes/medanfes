@@ -18,8 +18,8 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         try {
-            Config::$serverKey    = env('MIDTRANS_SERVER_KEY');
-            Config::$isProduction = false;
+            Config::$serverKey    = config('services.midtrans.server_key');
+            Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
             Config::$isSanitized  = true;
             Config::$is3ds        = true;
 
