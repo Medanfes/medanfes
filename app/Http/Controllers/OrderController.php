@@ -57,7 +57,12 @@ class OrderController extends Controller
             $order->update(['snap_token' => $snapToken]);
 
             $ticketService = new TicketService();
-            $ticketService->generateAndSend($order);
+            // $ticketService->generateAndSend($order);
+
+            return response()->json([
+                'success' => true,
+                'snap_token' => $snapToken,
+            ]);
 
             return response()->json([
                 'snap_token' => $snapToken,
