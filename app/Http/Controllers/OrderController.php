@@ -62,10 +62,6 @@ class OrderController extends Controller
             return response()->json([
                 'success' => true,
                 'snap_token' => $snapToken,
-            ]);
-
-            return response()->json([
-                'snap_token' => $snapToken,
                 'order_id'   => $order->id,
             ]);
 
