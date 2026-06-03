@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Services\TicketService;
 use Illuminate\Http\Request;
 use Midtrans\Config;
 use Midtrans\Snap;
@@ -44,7 +43,7 @@ class OrderController extends Controller
 
             $params = [
                 'transaction_details' => [
-                    'order_id' => 'MEDANFES-' . $order->id . '-' . time(),
+                    'order_id'     => 'MEDANFES-' . $order->id . '-' . time(),
                     'gross_amount' => $total,
                 ],
                 'customer_details' => [
@@ -56,11 +55,8 @@ class OrderController extends Controller
             $snapToken = Snap::getSnapToken($params);
             $order->update(['snap_token' => $snapToken]);
 
-            $ticketService = new TicketService();
-            $ticketService->generateAndSend($order);
-
             return response()->json([
-                'success' => true,
+                'success'    => true,
                 'snap_token' => $snapToken,
                 'order_id'   => $order->id,
             ]);
