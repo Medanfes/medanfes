@@ -14,7 +14,7 @@ class MidtransWebhookController extends Controller
         \Log::info('WEBHOOK MASUK', $request->all());
         // 1. Set Midtrans config (untuk validasi signature)
         Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        Config::$isProduction = false;
+        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
 
         try {
             // 2. Ambil data dari Midtrans
