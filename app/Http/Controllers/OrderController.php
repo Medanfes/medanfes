@@ -1,66 +1,84 @@
-public function store(Request $request)
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Services\TicketService;
+use Illuminate\Http\Request;
+use Midtrans\Config;
+use Midtrans\Snap;
+
+class OrderController extends Controller
 {
-    try {
+    public function index()
+    {
+        return view('ticket');
+    }
 
-        Config::$serverKey    = config('services.midtrans.server_key');
-        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
-        Config::$isSanitized  = true;
-        Config::$is3ds        = true;
+    public function store(Request $request)
+    {
+        try {
 
-        $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|email',
-            'ticket_type' => 'required|in:regular,vip',
-            'quantity'    => 'required|integer|min:1|max:10',
-        ]);
+            Config::$serverKey    = config('services.midtrans.server_key');
+            Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+            Config::$isSanitized  = true;
+            Config::$is3ds        = true;
 
-        $price = $request->ticket_type === 'vip'
-            ? 300000
-            : 150000;
+            $request->validate([
+                'name'        => 'required|string|max:255',
+                'email'       => 'required|email',
+                'ticket_type' => 'required|in:regular,vip',
+                'quantity'    => 'required|integer|min:1|max:10',
+            ]);
 
-        $total = $price * $request->quantity;
+            $price = $request->ticket_type === 'vip'
+                ? 300000
+                : 150000;
 
-        $order = Order::create([
-            'name'        => $request->name,
-            'email'       => $request->email,
-            'ticket_type' => $request->ticket_type,
-            'quantity'    => $request->quantity,
-            'total_price' => $total,
-            'status'      => 'pending',
-        ]);
+            $total = $price * $request->quantity;
 
-        $midtransOrderId = 'MEDANFES-' . $order->id . '-' . time();
+            $order = Order::create([
+                'name'        => $request->name,
+                'email'       => $request->email,
+                'ticket_type' => $request->ticket_type,
+                'quantity'    => $request->quantity,
+                'total_price' => $total,
+                'status'      => 'pending',
+            ]);
 
-        $params = [
-            'transaction_details' => [
-                'order_id' => $midtransOrderId,
-                'gross_amount' => $total,
-            ],
-            'customer_details' => [
-                'first_name' => $request->name,
-                'email'      => $request->email,
-            ],
-        ];
+            $midtransOrderId = 'MEDANFES-' . $order->id . '-' . time();
 
-        $snapToken = Snap::getSnapToken($params);
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $midtransOrderId,
+                    'gross_amount' => $total,
+                ],
+                'customer_details' => [
+                    'first_name' => $request->name,
+                    'email'      => $request->email,
+                ],
+            ];
 
-        $order->update([
-            'snap_token' => $snapToken,
-        ]);
+            $snapToken = Snap::getSnapToken($params);
 
-        return response()->json([
-            'success' => true,
-            'snap_token' => $snapToken,
-            'order_id' => $order->id,
-        ]);
+            $order->update([
+                'snap_token' => $snapToken,
+            ]);
 
-    } catch (\Exception $e) {
+            return response()->json([
+                'success' => true,
+                'snap_token' => $snapToken,
+                'order_id' => $order->id,
+            ]);
 
-        return response()->json([
-            'error' => $e->getMessage(),
-            'line'  => $e->getLine(),
-            'file'  => $e->getFile(),
-        ], 500);
+        } catch (\Exception $e) {
 
+            return response()->json([
+                'error' => $e->getMessage(),
+                'line'  => $e->getLine(),
+                'file'  => $e->getFile(),
+            ], 500);
+
+        }
     }
 }
